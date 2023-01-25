@@ -99,7 +99,7 @@ func (client *Client) Aggregate(opts *bind.CallOpts, methods []*MethodCall) (blo
 	raw := *abi.ConvertType(out[1], new([][]byte)).(*[][]byte)
 
 	// Unpack results from the raw bytes.
-	err = unpackResults(results, raw, methods...)
+	err = unpackResults(&results, raw, methods...)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -166,7 +166,7 @@ func (client *Client) Execute(opts *bind.CallOpts, gasLimitPerCall *big.Int, res
 
 	var results []any
 	// Unpack results from the raw bytes.
-	err = unpackResults(results, raw, methods...)
+	err = unpackResults(&results, raw, methods...)
 	if err != nil {
 		return nil, err
 	}
@@ -182,7 +182,12 @@ func (client *Client) Execute(opts *bind.CallOpts, gasLimitPerCall *big.Int, res
 }
 
 // unpackResults unpacks the raw bytes into the results.
-func unpackResults(results []any, raw [][]byte, methods ...*MethodCall) error {
+func unpackResults(results *[]any, raw [][]byte, methods ...*MethodCall) error {
+	// check if results slice is nil
+	if results == nil {
+		return errors.New("results cannot be nil")
+	}
+
 	// If we have an unexpected length, return an error.
 	if len(raw) != len(methods) {
 		return errors.New(fmt.Sprintf("unexpected number of results, expected %d but got %d", len(methods), len(raw)))
@@ -193,8 +198,7 @@ func unpackResults(results []any, raw [][]byte, methods ...*MethodCall) error {
 
 		// Our result is empty, so we'll just return nil.
 		if len(raw[i]) == 0 {
-			results[i] = nil
-			continue
+			return errors.New(fmt.Sprintf("empty result at index %d", i))
 		}
 
 		// Unpack the result into the method output types.
@@ -206,7 +210,7 @@ func unpackResults(results []any, raw [][]byte, methods ...*MethodCall) error {
 
 		// Unpacks multiple results into a slice, if we return more than one value.
 		for _, u := range unpack {
-			results = append(results, u.(any))
+			*results = append(*results, u.(any))
 		}
 	}
 	return nil
