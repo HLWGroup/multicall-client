@@ -5,12 +5,12 @@ A wrapper for [Multicall](https://github.com/makerdao/multicall) that allows you
 ### Usage
 ```go
 // Create a new multicall client
-client, err := multicall.NewClient(multicall.CronosMainnet, multicall.MulticallV1, ethClient)
+client, err := multicall.New(multicall.CronosMainnet, multicall.V1, ethClient)
 if err != nil {
 	panic(err)
 }
 
-calls := []multicall.MethodCall{
+calls := []*multicall.MethodCall{
     // dead address balance of token
     multicall.NewMethodCall("0x5C7F8A570d578ED84E63fdFA7b1eE72dEae1AE23", ERC20Abi.Methods["balanceOf"], "0x000000000000000000000000000000000000dead"),
 	// name of token
