@@ -113,7 +113,7 @@ type QuickCallResults struct {
 }
 
 type QuickCallResult struct {
-	Status uint64
+	Status *big.Int
 	Result any
 }
 
@@ -121,7 +121,7 @@ type QuickCallResult struct {
 // This is useful for checking if a call was successful or not.
 // Typically, a status of zero means the call has reverted or failed.
 func (qcr *QuickCallResult) IsStatusZero() bool {
-	return qcr.Status == 0
+	return qcr.Status.Cmp(common.Big0) == 0
 }
 
 // Execute makes multiple calls to the target contracts and returns the results.
@@ -160,8 +160,9 @@ func (client *Client) Execute(opts *bind.CallOpts, gasLimitPerCall *big.Int, res
 		return nil, err
 	}
 
+	result = &QuickCallResults{}
 	result.BlockNumber = *abi.ConvertType(out[0], new(*big.Int)).(**big.Int)
-	statuses := *abi.ConvertType(out[1], new([]uint64)).(*[]uint64)
+	statuses := *abi.ConvertType(out[1], new([]*big.Int)).(*[]*big.Int)
 	raw := *abi.ConvertType(out[2], new([][]byte)).(*[][]byte)
 
 	var results []any
