@@ -8,6 +8,7 @@ import (
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/ethclient"
+	"log"
 	"math/big"
 )
 
@@ -206,7 +207,10 @@ func unpackResults(results *[]any, raw [][]byte, methods ...*MethodCall) error {
 		// Sadly we'll need to cast this later on.
 		unpack, err := call.Method.Outputs.Unpack(raw[i])
 		if err != nil {
-			return err
+			// allows for nil results if we have an error unpacking the result
+			log.Println("unpackResults", err)
+			*results = append(*results, nil)
+			continue
 		}
 
 		// Unpacks multiple results into a slice, if we return more than one value.
